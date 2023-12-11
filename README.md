@@ -12,5 +12,3 @@ R (version 4.2.0 or higher) and Rstudio
 Usage :
 Refer to the html file for step-by-step instructions on data visualization techniques using these datasets.
 
-License :
-This project is open-sourced .
