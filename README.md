@@ -1,4 +1,4 @@
-Data Visualization Using R by Sana Rebbah
+Data Visualization Using R by Sana Rebbah, biostatistician
 
 This repository contains an html file  and two datasets for the introduction of data visualization using R, focusing on the ggplot2 package.
 
