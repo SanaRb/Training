@@ -3,7 +3,9 @@ Data Visualization Using R by Sana Rebbah, biostatistician
 This repository contains an html file  and two datasets for the introduction of data visualization using R, focusing on the ggplot2 package.
 
 Datasets: 
+
 heart_dataset: A comprehensive dataset for heart disease research.
+
 oasis_main: A detailed dataset for brain imaging studies.
 
 Requirements :
