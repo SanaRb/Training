@@ -1,0 +1,1027 @@
+---
+title: "Data visualization using R"
+author: "Author : Sana Rebbah, biostatistician"
+date: "2023-11"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    number_sections: yes
+  pdf_document:
+    toc: yes
+sansfont: Calibri Light
+header-includes: \usepackage{color}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+Data visualization is a critical aspect of data analysis, allowing us to communicate complex data in a clear and concise way. R is a powerful tool for data visualization, providing a wide range of packages and functions for creating high-quality plots and charts. In this training, you will learn how to use R to create effective visualizations that can help you explore and communicate your data. By the end of this training, you will hopefully have the skills to create informative and visually appealing graphics using R.
+
+- Context : limitation of using the plot function
+
+While the base R "plot" function is a good starting point for data visualization, it is limited in its functionality and flexibility for creating more advanced and insightful graphics.
+
+```{r , fig.align = 'center', fig.width = 4, fig.height = 4, message = FALSE, warning = FALSE}
+# import the dataset iris
+# Data : iris => measurements in cms of the variables sepal length and width and petal length and width, respectively, for 50 flowers from each of 3 species of iris
+data(iris)
+
+#display first rows of the dataframe
+head(iris)
+
+# Plot Sepal.Length by Sepal.Width using the basic plot() R function
+plot(iris$Sepal.Width,iris$Sepal.Length)
+
+```
+
+By utilizing the grammar of graphics, ggplot2 allows for a greater range of customization and produces more professional-looking plots.
+
+# ggplot2 - Plot layer by layer
+
+ggplot2 is a widely used data visualization package in R that provides a flexible and powerful framework for creating high-quality graphics. It is based on the grammar of graphics, which allows you to build complex and customized visualizations by combining different layers and aesthetics. 
+
+**In ggplot2, a visualization is constructed by layering different components : **
+
+- **Data**: the data that you’re feeding into a plot.
+- **Aesthetics (“aes”)** : the data is to map onto the Aesthetics attributes such as x-axis, y-axis, color, fill, size, labels, alpha, shape, line width, line type…
+- **Geometrics ("geom_XXX")**: How our data being displayed (e.g. points, lines, histogram, bars, boxplots..)
+- Facets : The plot is into multiple panels, based on one or more variables
+- Statistics: Binning, smoothing, descriptive, intermediate
+- Themes
+- labels
+- etc....
+
+
+## Layer 1 : Data & Aesthetics
+
+- Data
+
+```{r , fig.align = 'center', fig.width =3, fig.height = 3, message = FALSE, warning = FALSE}
+#load ggplot2 package
+#install.packages("ggplot2")
+library(ggplot2)
+
+# The layer 1: Data
+ggplot(data=iris)
+
+```
+
+- Aesthetics
+
+```{r , fig.align = 'center', fig.width = 3, fig.height = 3, message = FALSE, warning = FALSE}
+
+# Aesthetics (add "mapping = aes(x = , y = )")
+
+ggplot(data = iris, mapping = aes(x = Sepal.Width, y = Sepal.Length))
+```
+
+## Layer 2 : Geometrics
+
+- With prefix "geom_"
+
+```{r , fig.align = 'center', fig.width =4 , fig.height = 4, message = FALSE, warning = FALSE}
+
+# The layer 2 - Scatterplot : "geom_point()"
+ggplot(data = iris, mapping = aes(x = Sepal.Width, y = Sepal.Length))+
+  geom_point() 
+
+## Colored  by species
+ggplot(data=iris, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
+    geom_point()
+  
+```
+
+
+## Layer : Statistics
+
+```{r , fig.align = 'center', fig.width = 5, fig.height = 5, message = FALSE, warning = FALSE}
+
+ggplot(iris, aes(Sepal.Length, Sepal.Width,color=Species)) +
+  geom_point() +
+  stat_smooth(method = "lm")
+  
+```
+
+## Layer : labs and theme
+
+```{r , fig.align = 'center', fig.width = 5, fig.height = 5, message = FALSE, warning = FALSE}
+
+ggplot(iris, aes(Sepal.Length, Sepal.Width,color=Species)) +
+  geom_point() +
+  stat_smooth(method = "lm")+
+  labs(title = "Sepal.Width by Sepal.length for each species", caption = "Sepal Length and Sepal Width are in cm")+
+  theme_bw()
+  
+```
+
+# The datasets
+
+First we need to import the datasets :
+
+* **"heart_dataset"** : This dataset contains medical data related to heart diseases, used for analysis and prediction of the presence or absence of heart diseases in a population
+
+
+```{r , fig.align = 'center', fig.width = 5, fig.height = 5, message = FALSE, warning = FALSE}
+
+# Set your working directory containing the data folder "Datasets" 
+
+setwd("C:/Users/sana.rebbah/Documents/Projets/Projets_2023/Training_Data_Visualization_20231115/") #change this directory to choose the one containing the data folder "Datasets" 
+
+# install.packages(c("car","dplyr","openxlsx","knitr"))
+library(car)
+library(dplyr)
+library(openxlsx)
+library(knitr)
+
+## Import the dataset : "heart_dataset.xlsx"
+
+# -> Variables :
+# - Age: The subject's age in years
+# - Gender: The subject's sex (Male/Female)
+# - Chest_pain: The chest pain experienced (typical angina, atypical angina, non-anginal pain, asymptomatic)
+# - Rest_blood_press: The subject's resting blood pressure (mm Hg on admission to the hospital)
+# - Cholest: The subject's cholesterol measurement in mg/dl
+# - Max_heart_rate: The subject's maximum heart rate achieved
+# - Exercise_angina: Exercise induced angina (Presence of angina; absence of angina)
+# - ECG_ST_depression: ST depression induced by exercise relative to rest ('ST' relates to positions on the ECG plot.)
+# - Nb_vessel: The number of major vessels (0-3)
+# - Disease_class: Presence or absence of a heart disease (CTRL, HeartDisease)
+
+heart.data <- read.xlsx("Datasets/heart_dataset.xlsx")
+str(heart.data)
+heart.data$Chest_pain <- factor(heart.data$Chest_pain,levels=c("Asympt","non_anginal_pain","Atypical_angina","Typical_angina"))
+
+```
+
+* **"oasis_main"** : The oasis dataset contains demographic, clinical and brain imaging data of subjects with and without dementia
+
+```{r , fig.align = 'center', fig.width = 5, fig.height = 5, message = FALSE, warning = FALSE}
+
+setwd("C:/Users/sana.rebbah/Documents/Projets/Projets_2023/Training_Data_Visualization_20231115/") #change this directory to choose the one containing the data folder "Datasets" 
+
+##---> Import the dataset : "oasis_main.xlsx"
+
+# -> Variables :
+# - Subject.ID : Subject Identifier 
+# - Group : whether the subject has dementia or not (Demented / NonDemented)
+# - Visit : Visit 1, Visit 2 and Visit 3
+# - Age : Age at time of image acquisition (years)
+# - Gender : Gender (M or F)
+# - Educ : Years of education
+# - SES : Socioeconomic status, from 1 (highest status) to 5 (lowest status) 
+# - MMSE : Mini-Mental State Examination score (range is from 0 = worst to 30 = best)
+# - CDR : Clinical Dementia Rating (0 = no dementia, 0.5 = very mild dementia, 1= mild dementia) 
+# - ASF : Atlas scaling factor (unitless). Computed scaling factor that transforms native-space brain and
+# skull to the atlas target
+# - eTIV Estimated total intracranial volume (cm3) 
+# - nWBV Normalized whole-brain volume, expressed as a percent of all voxels in the atlas-masked image
+
+oasis.data <- read.xlsx("Datasets/oasis_main.xlsx")
+kable(head(oasis.data))
+
+##---> transform all characters to factors for both dataset
+
+heart.data = heart.data %>% mutate_if(is.character,as.factor)
+oasis.data = oasis.data %>% mutate_if(is.character,as.factor)
+oasis.data$CDR<- factor(oasis.data$CDR)
+
+```
+
+# Univariate plots
+
+Univariate plots are types of data visualizations that show the distribution of a single variable
+
+## Quantitative variable
+
+When dealing with quantitative variables, common univariate plots include histograms, density plots. These plots help to summarize the central tendency, spread, and shape of the distribution.
+
+### Histogram plot
+
+Histograms are used to show the distribution of the variable, with the x-axis representing the range of values and the y-axis representing the frequency of those values.
+
+**'geom_histogram()'** is used to create histograms in ggplot2, where the *'bins'* parameter controls the number of bars or bins.
+
+```{r , fig.align = 'center', fig.width = 4, fig.height = 4, message = FALSE, warning = FALSE}
+#install.packages("ggplot2")
+library(ggplot2)
+
+# Histogram of "Age" Variable
+ggplot(data = heart.data , aes(x = Age)) +
+  geom_histogram(color = "black", fill = "lightblue", bins = 15) +
+  theme_bw()+
+  labs(title = "The histogram of age", x = "Age")
+
+```
+
+### Density plot
+
+Density plots are similar to histograms, but they show the smooth density curve instead of bars.
+
+**'geom_density()'** is used to create a density plot
+
+y: the frequency of observations can be calculated as a density using the *after_stat()* function
+
+```{r , fig.align = 'center', fig.width = 4, fig.height = 4, message = FALSE, warning = FALSE}
+
+# Density of "Age" of heart.data dataset (x-axis : Age, y-axis : density)
+ggplot(data = heart.data , aes(x = Age)) +
+  geom_density(linewidth = 1.2, color="red")+
+  theme_bw()+
+  labs(title = "The Density curve of Age", x = "Age of the subjects", y = "Density")
+```
+
+### Histogram AND density plot
+
+```{r , fig.align = 'center', fig.width = 4, fig.height = 4, message = FALSE, warning = FALSE}
+# Histogram and density of "Age" Variable in the same plot with and a vertical line that represent the mean value of Age
+
+# colors :  https://r-graph-gallery.com/42-colors-names_files/figure-html/thecode-1.png
+# linetypes : http://www.sthda.com/sthda/RDoc/figure/graphs/linetypes-in-r-line-types.png
+
+ggplot(data = heart.data , aes(x = Age)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 12, color = "black",fill = "lightblue") +
+  geom_density(linewidth = 1.2, color="red")+
+  geom_vline(aes(xintercept=mean(Age)), linetype="dashed", linewidth=1.5, color="brown")+ 
+  theme_bw()+
+  labs(title = "Distribution of Age (histogram and density)", x = "Age of the subjects", y = "Density")
+
+
+```
+
+## Categorical variable
+
+Univariate plots that are useful for visualizing categorical variables include bar charts and pie charts
+
+### Barplot, with counts as y-axis
+
+To plot a bar chart in ggplot2, we use the function **'geom_bar()'**, where x is the categorical variable to be plotted on the x-axis and fill is the color of the bars. To add the counts and percentages to the plot, we can use the function **'geom_text()'** with the *"count"* statistic and the *percent()* function from the scales package, respectively.
+
+```{r , fig.align = 'center', fig.width = 4, fig.height = 4, message = FALSE, warning = FALSE}
+# Barplot of counts of disease class in heart.data dataset
+ggplot(data = heart.data , aes(x = Disease_class, fill = Disease_class)) +
+  geom_bar()+
+  geom_text(stat='count',aes(label=after_stat(count)),nudge_y = -5)+
+  scale_fill_manual(values = c("lightblue","lightcoral"))+    
+  theme_bw()+
+  labs(x = "Disease_class", 
+       y = "count", 
+       title  = "Count of Disease class")
+```
+
+### Barplot, with percents
+
+```{r , fig.align = 'center', fig.width = 4, fig.height = 4, message = FALSE, warning = FALSE}
+# Barplot with percents of disease class in heart.data dataset
+
+# install.packages("scales")
+library(scales)
+
+ggplot(data = heart.data, aes(x = Disease_class, fill = Disease_class)) +
+  geom_bar(width = 0.7) +
+  geom_text(stat = 'count', aes(label = percent(after_stat(count)/sum(count))),vjust=2) +
+  scale_fill_manual(values = c("lightblue","lightcoral"))+
+  theme_bw() +
+  labs(x = "Disease_class", title  = "Percentage of Disease class")
+
+```
+
+
+### Barplot, with count and percents
+
+```{r , fig.align = 'center', fig.width = 6, fig.height = 6, message = FALSE, warning = FALSE}
+# Barplot with count and percents of disease class in heart.data dataset
+
+ggplot(data = heart.data, aes(x = Chest_pain, fill = Chest_pain)) +
+  geom_bar(width = 0.8)+
+  geom_label(stat = 'count', aes(label = percent(after_stat(count)/sum(count))), vjust =1.5, show.legend = FALSE) +
+  geom_text(stat='count', aes(label= paste("n =",after_stat(count))), vjust=4.5, size=3.5)+             
+  scale_fill_brewer(palette = "Blues") +
+  theme_bw() +
+  labs(title  = "Barplots - Count & Percentage of chest pain type",
+       x = "Type of chest pain")
+```
+
+
+# Bivariate plots
+
+Bivariate plots refer to plots that involve two variables. These plots are used to visualize the relationship between two variables and are useful in identifying patterns and trends.
+
+## Categorical vs. Categorical
+
+Some of the common plot types used for categorical vs. categorical variables include stacked bar plots, grouped bar plots, and mosaic plots. These plots can help us understand how the frequencies or proportions of the categories in one variable differ across the categories of the other variable.
+
+### Staked barplot
+
+A stacked barplot displays the total value for each category while dividing each bar into sub-bars that represent the contributions of different subgroups.
+
+**geom_bar()** is used to create the stacked bars, and *'position_stack()'* to stack them. The function **geom_text()** is used to add the count labels on top of each bar. 
+
+```{r , fig.align = 'center', fig.width = 5, fig.height = 5, message = FALSE, warning = FALSE}
+## Stacked barplot - Number of Female/Male by Disease class
+
+ggplot(data= heart.data, aes(x = Disease_class, fill = Gender)) + 
+  geom_bar(position = "stack", width=0.5, alpha=0.7)+
+  geom_text(stat='count',aes(label= paste0("n = ",after_stat(count))),position = position_stack(),vjust=1.5)+
+  scale_fill_brewer(palette = "Dark2") +
+  theme_bw()+
+  labs(subtitle = "Stacked bar chart - Number of Female/Male by Disease class")
+
+```
+
+### Grouped barplot
+
+Grouped barplot is a barplot where the bars of each category are grouped together side by side instead of stacked on top of each other.
+
+The bars are positioned side-by-side using the *'position = dodge'* argument in the **geom_bar()** function
+
+```{r , fig.align = 'center', fig.width = 6, fig.height = 5, message = FALSE, warning = FALSE}
+## Grouped barplot - Number of Female/Male by Disease class
+
+ggplot(data= heart.data, aes(x = Disease_class, fill = Gender)) + 
+    geom_bar(position = "dodge", width=0.5, alpha=0.7)+
+    geom_text(stat='count',aes(label= paste0("n = ",after_stat(count))),position = position_dodge(0.5),vjust=-0.5)+
+    scale_fill_brewer(palette = "Dark2") +
+    theme_bw()+
+    labs(subtitle = "Side-by-side bar chart - Number of Female/Male by Disease class")
+
+```
+
+## Quantitative vs. Quantitative
+
+Quantitative vs. Quantitative plots are used to visualize the relationship between two numerical variables. There are various types of plots that can be used for this purpose, including scatterplots, regressions, line plots...
+
+### Scatterplot 
+
+To create a scatterplot in ggplot2, we use the function **geom_point()**
+
+```{r , fig.align = 'center', fig.width = 6, fig.height = 6, message = FALSE, warning = FALSE}
+## Scatterplot : Variation of Max_heart_rate by age colored by Disease_class
+ggplot(dat = heart.data , aes(x = Age, y = Max_heart_rate , col = Disease_class)) +
+  geom_point(alpha=0.9)+
+  theme_bw()+
+  labs(subtitle = "Scatterplot - Max heart rate by age colored by Disease class")
+
+```
+
+### Linear regression
+
+**geom_smooth**(method="lm", se = TRUE) function adds the linear regression line with a shaded confidence interval.
+
+```{r , fig.align = 'center', fig.width = 6, fig.height = 6, message = FALSE, warning = FALSE}
+ggplot(dat = heart.data , aes(x = Age, y = Max_heart_rate , col = Disease_class)) +
+  geom_point()+
+  geom_smooth(method="lm", formula = y ~ x, se = TRUE)+
+  scale_fill_brewer(palette="Pastel1") +
+  theme_bw()+
+  labs(subtitle = "Linear regression of Max heart rate by age of each Disease class")
+
+```
+
+### Line plot
+
+- Spaghetti plot
+
+A spaghetti plot is a type of line plot that shows the individual trajectories over time or space on the same graph, often used to compare trends or patterns among different groups or subjects.
+
+The **geom_line()** function is used to create a line plot, which connects points along the x-axis with lines.
+
+```{r , fig.align = 'center', fig.width = 6, fig.height = 6, message = FALSE, warning = FALSE}
+#line plots - Variation over time of nWBV of each subject colored by Group
+ggplot(dat = oasis.data , aes(x = Age, y = nWBV , col = Group, group = Subject.ID)) +
+  geom_point()+
+  scale_fill_brewer(palette="Pastel1") +
+  geom_line(linewidth=0.3)+
+  scale_x_continuous(breaks = seq(55, 100, 5)) +
+  theme_bw()+
+  labs(subtitle = "Line plot - Variation over time of nWBV of each subject colored by Group")
+
+```
+
+## Categorical vs. Quantitative
+
+These plots help us understand how the value of the quantitative variable changes with respect to different levels of the categorical variable. Common types of categorical vs. quantitative plots include boxplots, violin plots, barplots with error bars.
+
+### Barplots with error bars
+
+The geom_bar() function is used to create the bar plot, and geom_errorbar() is used to add vertical error bars to the bars to represent the standard error. 
+
+```{r , fig.align = 'center', fig.width = 4, fig.height = 4, message = FALSE, warning = FALSE}
+
+# Extract all summary statistics : n, mean, sd, se, ci
+
+#install.packages("Rmisc")
+library(Rmisc)
+heart.data.summary <- summarySE(heart.data, measurevar = "Max_heart_rate", 
+                                groupvars = "Disease_class", na.rm = TRUE)
+
+# add error bars (here the standard error) to the barplot
+ggplot(heart.data.summary, aes(x = Disease_class, y = Max_heart_rate, fill= Disease_class)) +
+  geom_bar(stat = "identity",width = 0.5)+
+  geom_errorbar(aes(ymin = Max_heart_rate-se, ymax = Max_heart_rate+se), width = 0.3)+
+  #geom_jitter(data=heart.data, aes(x = Disease_class, y = Max_heart_rate),alpha=0.2,width = 0.2)+
+  theme_bw()+
+  labs(subtitle = "Barplot with SE error bar - Max_heart_rate by disease_class")
+
+```
+
+This code creates a bar plot of summary statistics using the **ggbarplot()** function from the "ggpubr" package. The "add" argument is set to *"mean_se"* which adds error bars to the plot.
+
+```{r , fig.align = 'center', fig.width = 4, fig.height = 4, message = FALSE, warning = FALSE}
+# barplot of summary statistics with "ggbarplot" function
+
+#install.packages("ggpubr")
+library(ggpubr)
+ggbarplot(heart.data, x = "Disease_class", y = "Max_heart_rate", fill = "Disease_class", 
+          add = "mean_se",width = 0.3, error.plot = "upper_errorbar",
+          palette = "Pastel1")+
+  #geom_jitter(width = 0.1,alpha=0.2)+
+  theme_bw()+
+  labs(subtitle = "Barplot with SE error bar - Max_heart_rate by disease_class")
+
+```
+
+
+### Boxplots
+
+A boxplot is a statistical chart used to display the distribution of a dataset, showing the median, quartiles, and outliers, with the box representing the interquartile range (IQR) and the whiskers representing the lowest and highest non-outlier values within 1.5 times the IQR from the lower and upper quartiles, respectively.
+
+![](https://miro.medium.com/v2/resize:fit:720/format:webp/1*wiSLXKzzVOVtutpBZozpFQ.png)
+
+The **geom_boxplot()** is used to create a boxplot, **geom_jitter()** is used to add individual data points 
+
+```{r , fig.align = 'center', fig.width = 6, fig.height = 5, message = FALSE, warning = FALSE}
+
+ggplot(heart.data, aes(x = Disease_class, y = Max_heart_rate, fill = Disease_class)) +
+  geom_boxplot(width=0.45, outlier.alpha = 0) +
+  geom_jitter(width = 0.1, alpha = 0.2)+
+  labs(title = "Boxplot - Max heart rate by Disease class")+
+  theme_bw()
+
+## color the individual points - Boxplox of nWBV by CDR
+ggplot(oasis.data, aes(x = CDR, y = nWBV)) +
+  geom_boxplot(width=0.45, outlier.alpha = 0) +
+  geom_jitter(aes(color=CDR),width = 0.1, alpha = 0.7)+
+  labs(subtitle = "Boxplots - Normalized whole-brain volume by Clinical Dementia Rating",
+       caption = "CDR : 0 = no dementia, 0.5 = very mild dementia, 1= mild dementia \n 
+       nWBV : Normalized whole-brain volume")+
+  theme_bw()
+
+```
+
+### Violin plot
+
+A violin plot is a type of data visualization that displays the distribution of a dataset by drawing a kernel density plot on each side of a central axis, resembling the shape of a violin, where the width of the "violin" at each point represents the density or frequency of data points at that value. The plot also typically includes a box plot or similar marker to show additional summary statistics such as quartiles, median, and outliers.
+
+The function **geom_violin()** is used to create the violin plot
+
+```{r , fig.align = 'center', fig.width = 5, fig.height = 5, message = FALSE, warning = FALSE}
+
+ggplot(heart.data, aes(x = Disease_class, y = Max_heart_rate, fill = Disease_class)) +
+  geom_boxplot(width = 0.45, alpha = 0.3) +
+  geom_violin(alpha = 0.2) +
+  geom_jitter(width = 0.1, alpha = 0.3)+
+  labs(title = "Box plot & violin plot - Max heart rate by Disease class")+
+  theme_bw()
+
+```
+
+### Density plot
+
+The **geom_density()** function is used to add a density plot layer to the plot
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+
+ggplot(heart.data, aes(x = Max_heart_rate, fill = Chest_pain)) +
+  geom_density(alpha = 0.4) +
+  labs(title = "Max heart rate distribution by Chest_pain")+
+  theme_bw()
+
+```
+
+**geom_density_ridges()** is a function from the ggridges package that can be used to create ridgeline density plots. It works similarly to a traditional density plot, but instead of plotting a single density curve, it creates multiple curves, one for each level of a categorical variable. The curves are then stacked on top of each other to create a ridge-like appearance.
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+#using geom_density_ridges() function
+
+#install.packages("ggridges")
+library(ggridges)
+ggplot(heart.data, aes(x = Max_heart_rate, y =Chest_pain, fill = Chest_pain)) +
+  geom_density_ridges(alpha=0.6)+
+  labs(title = "Max heart rate distribution by type of chest pain")+
+  theme_ridges()  
+
+```
+
+
+# Multivariate plots
+
+Multivariate plots are used to visualize the relationship between multiple variables in a dataset. They are useful for identifying patterns and trends that may not be visible in univariate plots.
+
+## Faceting
+
+Faceting is a technique used in multivariate plots to create small multiples or panels, where the data is split into subsets and each subset is displayed separately in its own panel. This allows for the comparison of different subsets of the data and enables easy identification of any patterns or differences between them.
+
+In R, faceting is implemented using the facet_grid() or **facet_wrap()** functions in the ggplot2 package.
+
+- Reshape data, from wide to long
+```{r , fig.align = 'center', fig.width = 6, fig.height = 6, message = FALSE, warning = FALSE}
+#install.packages("tidyr")
+library(tidyr)
+
+# reshape format from wide to long (only Categorical variables)
+heart.data.long.cat <- gather(heart.data, key = Measures, value = Value, 
+                              c("Gender","Disease_class","Chest_pain","Exercise_angina"), 
+                              factor_key = TRUE)
+
+# reshape format from wide to long (only quantitative variables)
+heart.data.long.quant <- gather(heart.data,Measures, Value, 
+                                c("Rest_blood_press","Max_heart_rate","Cholest"), 
+                                factor_key=TRUE)
+
+```
+
+
+- Barplots for Categorical variables
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 8, message = FALSE, warning = FALSE}
+p1 <- ggplot(data = heart.data.long.cat , aes(x = Value, fill=Value)) +
+  geom_bar(width=0.7)+
+  geom_text(stat='count',aes(label=paste("n =",after_stat(count))),nudge_y = -10, size=3.5)+
+  facet_wrap(~Measures, scales = "free", ncol = 2)+
+  theme_minimal()+
+  theme(legend.position = "none", axis.text.x = element_text(angle =10))+
+  labs(title="barplot of all Categorical variables")
+plot(p1)
+
+```
+
+- Boxplots for quantitative variables
+
+```{r , fig.align = 'center', fig.width = 6, fig.height = 6, message = FALSE, warning = FALSE}
+p2 <- ggplot(data = heart.data.long.quant , aes(x = Disease_class, y = Value, fill = Disease_class)) +
+  geom_boxplot(width = 0.45, alpha = 0.3) +
+  geom_jitter(width = 0.1, alpha = 0.1)+
+  facet_wrap(~Measures,scales = "free")+
+  theme_bw()+
+  labs(title = "Boxplot of all quantitative variables")+
+  theme(legend.position="top")
+plot(p2)
+
+```
+
+## Merging the plots
+
+The **plot_grid()** function from the "cowplot" package is used arrange multiple plots into a grid. The function takes the plots as inputs and arranges them side-by-side into a single plot. 
+
+```{r , fig.align = 'center', fig.width = 13, fig.height = 8, message = FALSE, warning = FALSE}
+# Arrange multiple plots into a grid : merge "p1" and "p2" plots in one plot
+
+#install.packages("cowplot")
+library(cowplot)
+
+cowplot::plot_grid(p1, p2, labels = c('A', 'B'), rel_widths = c(3,2))
+```
+
+# Plots with Statistics
+
+Adding statistical tests and p-values on the plots is a way to provide additional information and insights from the data. This can be achieved by using different functions and packages in R. For example, **"ggpubr"** package provides the **stat_compare_means()** function, which can be used to add statistical comparisons between groups on a plot. This function calculates different statistical tests, such as t-test, Wilcoxon rank sum test, and ANOVA, and displays the corresponding p-values on the plot.
+
+Another package, ggpmisc, provides functions such as **stat_poly_eq()** which can be used to add equations of a fitted regression line on a plot.
+
+## Adding statistical tests & p-vlaues
+
+### Independant design
+
+#### Adding t-test p-vlaues on the boxplots
+
+The **stat_compare_means()** function is used to add t-test results to the plot. The method argument specifies the statistical test used, and aes() is used to set the label for the p-value using **after_stat(p.signif)** which calculates the p-value.
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 7, message = FALSE, warning = FALSE}
+#install.packages("ggpubr")
+library(ggpubr)
+
+ggplot(data = heart.data.long.quant , aes(x = Disease_class, y = Value, fill = Disease_class)) +
+  geom_boxplot(width = 0.45, alpha = 0.3) +
+  geom_jitter(width = 0.1, alpha = 0.1)+
+  facet_wrap(~Measures,scales = "free")+
+  stat_compare_means(method = "t.test",colour='red',label.x = 1.25)+
+  theme_bw()+
+  labs(title = "Boxplot of continuous variables by disease class with results of t-test")+
+  theme(legend.position="top")
+
+# only the stars
+ggplot(data = heart.data.long.quant , aes(x = Disease_class, y = Value, fill = Disease_class)) +
+  geom_boxplot(width = 0.45, alpha = 0.3) +
+  geom_jitter(width = 0.1, alpha = 0.1) +
+  facet_wrap(~Measures,scales = "free") +
+  stat_compare_means(method = "t.test", aes(label = after_stat(p.signif)), label.x = 1.5, colour='red') +
+  theme_minimal()+
+  labs(title = "Boxplot of continuous variables by disease class with results of t-test")
+```
+
+#### Adding t-test p-vlaues on the barplot with standard errors 
+
+```{r , fig.align = 'center', fig.width = 4, fig.height = 4, message = FALSE, warning = FALSE}
+#install.packages("rstatix")
+library(rstatix)
+
+stat.test <- heart.data %>%
+  t_test(Max_heart_rate ~ Disease_class) %>%
+  adjust_pvalue(method = "bonferroni")%>%
+  add_significance("p.adj")%>%
+  add_xy_position(fun = "mean_se", x = "Disease_class") 
+
+ggbarplot(data = heart.data, x = "Disease_class", y = "Max_heart_rate", fill = "Disease_class", 
+          add = "mean_se",
+          width = 0.4, palette = c("dark2"))+
+  stat_pvalue_manual(stat.test,  label = "p.adj.signif", remove.bracket = FALSE, tip.length = 0)
+
+```
+
+### Dependent design with repeated measures 
+
+*"paired = T"* in "stat_compare_means" function specifies that the data is paired
+
+```{r , fig.align = 'center', fig.width = 5, fig.height = 5, message = FALSE, warning = FALSE}
+##-> Adding t-test p-vlaues on the boxplots
+
+# Dataset "oasis.data" offers a dependent design with repeated measures
+
+# We only keep timepoint "Visit 1" and "Visit 2"
+oasis.data.filter <- data.frame(filter(oasis.data, Visit == "Visit 1" | Visit == "Visit 2") %>%
+  group_by(Subject.ID) %>%
+  filter(n_distinct(nWBV)==2))
+
+ggplot(data = oasis.data.filter , aes(x = Visit, y = nWBV, fill = Visit)) +
+  geom_boxplot(width = 0.45, alpha = 0.7,outlier.alpha = 0) +
+  geom_jitter( alpha = 0.1 , position = position_jitterdodge(0.3))+
+  geom_line(aes(group=Subject.ID), alpha=0.1)+
+  stat_compare_means(method = "t.test",paired = T, aes(label = after_stat(p.signif)),label.x = 1.5,colour='red')+
+  scale_fill_brewer(palette = "Greens")+
+  theme_minimal()+
+  labs(title = "Boxplot of nWBV by Visit with results of paired t-test")
+```
+
+
+
+### To go further
+
+There are many different ways to add statistical tests and p-values to plots in R, and the techniques can vary depending on the type of plot and the specific use case. If you're interested in learning more, there are many resources available online that cover different approaches and scenarios. For example, you can check out tutorials on how to add p-values to different types of ggplot plots, such as adding p-values to ggplot facets with different scales, horizontal ggplots, basic ggplots, or ggplot facets.
+
+-- [How to add p-values onto basic ggplots](https://www.datanovia.com/en/blog/how-to-add-p-values-onto-basic-ggplots/)
+
+-- [How to add p-values onto a grouped ggplot using the ggpubr r package](https://www.datanovia.com/en/blog/how-to-add-p-values-onto-a-grouped-ggplot-using-the-ggpubr-r-package/)
+
+-- [How to add p-values to ggplot facets](https://www.datanovia.com/en/blog/how-to-add-p-values-to-ggplot-facets/)
+
+-- [How to add p-values onto horizontal ggplots](https://www.datanovia.com/en/blog/how-to-add-p-values-onto-horizontal-ggplots/)
+
+-- [How to add p-values generated elsewhere to a ggplot](https://www.datanovia.com/en/blog/ggpubr-how-to-add-p-values-generated-elsewhere-to-a-ggplot/)
+
+## Correlation plots
+
+the **ggcorrplot()** function is used to generate the correlation plot. It takes the correlation coefficient matrix (corr.r) and p-value matrix (corr.p) as inputs
+
+```{r , fig.align = 'center', fig.width = 5, fig.height = 5, message = FALSE, warning = FALSE}
+#install.packages(c("psych","ggcorrplot"))
+library(psych)
+library(ggcorrplot)
+
+oasis.data.baseline <- filter(oasis.data,Visit == "Visit 1")
+corr <- corr.test(oasis.data.baseline[,c("Age","EDUC","MMSE","eTIV","nWBV","ASF")], 
+                  method = "pearson", adjust = "bonferroni")
+corr.r <- corr$r
+corr.p <- corr$p
+
+ggcorrplot(corr.r, p.mat = corr.p,
+           type = "lower",  lab = TRUE,
+           insig = "pch",pch.cex = 8,
+           colors=c("#143FCC", "#FFFFFF", "#CC1632"),
+           title ="Pearson correlation matrix")
+```
+
+**tab_corr()** function from sjPlot package offers a more publication friendly tye of plot. This type of correlation matrix is often used in research papers and publications for summarizing correlations between variables.
+
+```{r , fig.align = 'center', fig.width = 5, fig.height = 5, message = FALSE, warning = FALSE}
+#install.packages("sjPlot")
+library(sjPlot)
+tab_corr(oasis.data.baseline[, c("Age","EDUC","MMSE","eTIV","nWBV","ASF")],
+         corr.method = "pearson",
+         na.deletion = "pairwise",
+         triangle = "lower",
+         title = "Pearson correlation matrix")
+```
+
+## Regression plots
+
+### Linear regression
+
+- with "geom_smooth" function
+
+In ggplot2, we can add a linear regression line to a scatterplot by using the geom_smooth function. This function fits a linear regression model by default, but it can also fit other types of models such as quadratic, cubic, or loess models by specifying the method parameter
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 6, message = FALSE, warning = FALSE}
+ggplot(dat = heart.data , aes(y = Max_heart_rate, x = Age , col = Disease_class)) +
+  geom_point()+
+  geom_smooth(method="lm", formula = y ~ x, se = TRUE, fullrange= TRUE, aes(fill=Disease_class), linetype="dashed")+
+  theme_bw()+
+  scale_fill_brewer(palette="Pastel1") +
+  labs(title = "Linear regression by disease class")
+
+```
+
+The **stat_poly_eq()** function adds the equation for the regression line to the plot, while **stat_correlation()** adds the Pearson correlation coefficient and associated p-value to the plot. The *mapping = use_label("eq")* and *mapping = use_label(c("R","P"))* arguments specify the labels for the equation and correlation statistics, respectively.
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 6, message = FALSE, warning = FALSE}
+
+# adding the equation of the linear regression
+
+#install.packages("ggpmisc")
+library(ggpmisc)
+ggplot(data = heart.data , aes(x = Age, y = Max_heart_rate , col = Disease_class)) +
+  geom_point()+
+  geom_smooth(aes(fill=Disease_class), method="lm", formula = y ~ x, se = TRUE, fullrange= TRUE, linetype="dashed")+
+  stat_poly_eq(mapping = use_label("eq")) +
+  scale_fill_brewer(palette="Pastel1") +
+  theme_bw()+
+  labs(title = "Linear regression & equation by disease class")
+
+# adding pearson Correlation test results
+ggplot(data = heart.data , aes(x = Age, y = Max_heart_rate , col = Disease_class)) +
+  geom_point()+
+  geom_smooth( method="lm", formula = y ~ x, se = TRUE, fullrange= TRUE, aes(fill=Disease_class), linetype="dashed")+
+  stat_poly_eq(mapping = use_label("eq")) +
+  stat_correlation(method = "pearson",mapping = use_label(c("R","P")),label.x = 1)+
+  scale_fill_brewer(palette="Pastel1") +
+  theme_bw()+
+  labs(title = "Regression regression with equation and correlation test")
+```
+
+- with "visreg" function
+
+The **visreg()** function is used to visualize the relationship between two variables while controlling for other variables in a model (in the opposite of geom_smooth that can't deal with covariates)
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+#install.packages("visreg")
+library(visreg)
+
+LM.fit <- lm(Max_heart_rate ~ Disease_class*Age, data= heart.data)
+
+visreg(LM.fit, xvar="Age", by="Disease_class", gg = T, overlay = TRUE)+
+  stat_poly_eq(mapping = use_label("eq"),color = c("red", "deepskyblue3")) +
+  stat_correlation(method = "pearson",mapping = use_label(c("R","P")),label.x = 1,color = c("red", "deepskyblue3"))+
+  theme_bw()+
+  labs(title="Linear regression by Disease class", 
+       subtitle = "using visreg function")
+```
+
+### Logistic regression
+
+ The **geom_smooth()** function is used to fit a logistic regression line to the data using the glm method with *family = "binomial"*
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+heart.data <- mutate(Disease_class_num = ifelse(Disease_class == "CTRL",0,1), .data=heart.data)
+
+ggplot(dat = heart.data , aes(y = Disease_class_num, x = Age )) +
+  geom_smooth(method="glm", method.args = list(family = "binomial"), se = TRUE, fullrange= TRUE, linetype="dashed")+
+  theme_bw()+
+  labs(title = "logistic regression - Relationship of age with presence of a heart disease",
+       y="Probability")
+
+# logistic regression with visreg
+GLM.fit <- glm(Disease_class ~ Age, data= heart.data, family="binomial")
+
+visreg(GLM.fit, xvar = "Age",scale="response", gg = TRUE,overlay = T)+
+  theme_bw()+
+  labs(y="Probability",
+       title = "Relationship of age with a presence of a heart disease",
+       subtitle = "using visreg function")
+```
+
+## Straightforward plots with statistics 
+
+The **ggstatsplot** package provides a set of functions that allow creating straightforward plots with statistics. These plots include, for example, bar plots, density plots, box plots, violin plots, and others. One advantage of using ggstatsplot is that it provides the option to add statistical tests, such as t-tests, ANOVA, or chi-square tests, directly to the plots. These plots are ready to publish as they are designed to display statistical results in a visually appealing and informative way.
+
+Learn more : https://indrajeetpatil.github.io/ggstatsplot/
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+#install.packages(c("ggstatsplot","ggside"))
+library(ggstatsplot)
+library(ggside)
+
+# Boxplot and violin plot with statistics
+ggbetweenstats(data  = heart.data,x = Disease_class,y = Max_heart_rate, bf.message = F,
+               title = "Boxplot & violin plot of Max heart rate by Disease class")
+
+ggbetweenstats(data  = oasis.data.baseline, x = CDR, y = nWBV, 
+               plot.type = "box",bf.message = F, pairwise.display = "all",results.subtitle = T,
+               title = "Boxplots of nWBV by CDR",)
+
+# barplot with statistics
+ggbarstats(data = heart.data, x = Gender, y = Disease_class, bf.message = F,
+           title="Barplots- Distribution of gender by Disease class")
+
+# scatterplot with histogram and statistics
+ggscatterstats( data = heart.data, x = Age, y = Max_heart_rate, bf.message = F,
+                title = "scatterplot of Max heart rate by Age with both histograms")
+
+# correlation matrix with statistics 
+ggcorrmat(data = oasis.data.baseline[,c("Age","EDUC","MMSE","eTIV","nWBV","ASF")],
+          matrix.type = "lower",p.adjust.method = "bonferroni",
+          colors = c("#143FCC", "#FFFFFF", "#CC1632"),
+          title = "Correlation matrix", subtitle = "with ggstatsplot package")
+```
+
+The discover other ggplots extensions : https://exts.ggplot2.tidyverse.org/gallery/
+
+# Saving plots
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+
+##---> Via menus
+# - Click on the "Export" button at the top of the plot you want to save. Then click "Save as Image"
+# - Choose the format of the image, the directory and the file name, finally click on "save"
+
+##---> Coding
+
+##-> ggsave function
+# ggsave(p2, filename = "Boxplots_quantitative_plots.png",width = 6,height = 6)
+
+##-> png function : allows to control the resolution 
+# png("Boxplots_quantitative_plots_2.png",res = 300,width = 2400,height = 900)
+# p2
+#dev.off()
+
+```
+
+# Advanced plots
+
+## Interactive plots
+
+Interactive plots are a type of advanced plot that allows the viewer to interact with the plot in various ways, such as zooming in or out, hovering over data points to see specific values, or clicking on certain elements to reveal more detailed information.
+
+To learn more: https://plotly.com/r/
+
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+#install.packages("plotly")
+library(plotly)
+
+# Interactive 2D scatterplot
+plot_ly(data = oasis.data.baseline, x = ~Age, y = ~nWBV, color= ~Group, 
+                type = "scatter",
+                colors = c('#0C4B8E', '#BF382A'))
+
+# Interactive 3D scatterplot
+plot_ly(oasis.data.baseline, x = ~Age, y = ~nWBV, z = ~MMSE, color = ~Group, 
+        colors = c('#0C4B8E', '#BF382A'))
+
+# Interactive boxplot
+plot_ly(data = oasis.data.baseline, x = ~Group, y = ~nWBV, color=~Group,
+        type = "box",boxpoints = "all",
+        colors = c('#0C4B8E', '#BF382A'))
+
+
+```
+
+## RStudio addins
+
+### Addins GGplot2 Builder "esquisse" : A Point and click interface
+
+"Esquisse" is an add-in for RStudio that allows users to build plots using a graphical user interface. It is built on top of the popular ggplot2 package and provides a user-friendly way to create complex and customizable plots. The add-in window can be opened from the "Addins" dropdown menu in RStudio.
+
+To learn more: https://cran.r-project.org/web/packages/esquisse/vignettes/get-started.html
+
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+
+#install.packages("esquisse")
+
+#esquisse:::esquisser()
+
+```
+
+![](C:/Users/sana.rebbah/Documents/Projets/Projets_2023/Data_visualization_19042023/Ressources/esquisse-rstudio-addin.png)
+
+### Addins colour picker
+
+The add-in allows users to visually select colors and returns the corresponding hexadecimal color codes. This can be helpful for creating customized color palettes for data visualizations or for specifying colors in code. The add-in window can be opened from the "Addins" dropdown menu in RStudio.
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+
+#install.packages("colourpicker")
+
+#colourpicker:::colourPickerAddin()
+
+```
+
+![](https://thinkr.fr/wp-content/uploads/tipsNtricks-addincolour.png)
+
+# Additional plots
+
+Besides the plots described above, there are numerous other types of plots that can be created in R. In this section, we will briefly introduce some of these additional plots and their use cases.
+
+The R Graph Gallery is a great resource for exploring various types of plots and finding inspiration for your own visualizations. With over 450 examples and code snippets, the gallery covers a wide range of topics and use cases. Check it out at https://www.r-graph-gallery.com/ 
+
+## Bubble plot
+
+A bubble plot is a type of scatter plot where the size of the points (or bubbles) is proportional to a third variable. In ggplot2, the size of the bubbles can be controlled using the **size** aesthetic. The main parameter that creates bubbles in ggplot2 is **geom_point()** with the additional size parameter to map the size of the bubbles to a variable.
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+ggplot(oasis.data.baseline, 
+       aes(x = eTIV, y = nWBV, size = Age)) +
+  geom_point(alpha = .5, fill="cornflowerblue", color="black", shape=21) +
+  theme_bw()
+
+```
+
+## Heatmap
+
+A heatmap is a graphical representation of data in which values are represented as colors. It is commonly used to visualize large datasets with multiple variables. The pheatmap function in R is a popular package for creating heatmaps.
+
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+#install.packages("pheatmap")
+library(pheatmap)
+pheatmap(mtcars,scale = "column")
+```
+
+## Survival analysis plot
+
+A survival analysis plot is a type of plot used to display survival data, which typically involves the probability of an event occurring over time. The **ggsurvplot** function from the *survminer* package can be used to create survival analysis plots.
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+#install.packages(c("survival","survminer"))
+library(survival)
+library(survminer)
+
+data(cancer)
+s.fit <- survfit(Surv(time, status) ~  1, data=cancer)
+ggsurvplot(s.fit,
+           xlab = "Time (days)",
+           title="lung cancer survival (Kaplan-Meier survival curve)") 
+```
+
+## ROC curve  
+
+**ggroc()** from *pROC* package is a function used to create ROC (receiver operating characteristic) curves in R, which are often used to evaluate the performance of binary classification models. The main parameter that creates the plot is the "roc" object, which is generated using the *roc()* function from the pROC package. Other parameters of ggroc() include legacy.axes to control whether the plot has axes with the traditional scale (0 to 1) or the modern scale (1-specificity to sensitivity),
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+#install.packages("pROC")
+library(pROC)
+
+# Create a training and a testing set
+train <- heart.data %>% dplyr::sample_frac(0.70)
+test  <- dplyr::anti_join(heart.data, train, by = 'ID')
+
+# Fit a logistic regression on the training set
+model = glm(Disease_class ~ Max_heart_rate + Age + Gender, data = train, family="binomial")
+
+# Predict on the testing test
+pred_test <- predict(model,newdata = test,type = "response")
+
+# Roc Analysis
+test_roc = roc(test$Disease_class,pred_test, plot = F, print.auc = TRUE)
+
+pROC::ggroc(test_roc, legacy.axes = TRUE, 
+            colour = 'steelblue', size = 1)+
+  labs(title=paste0("ROC analysis - AUC = ", round(test_roc$auc,2)),
+       subtitle="Predictors : Max_heart_rate, Age and Gender")+
+  theme_minimal()
+
+# Model evaluation on testing set
+# The confusionMatrix() function from the caret package is used to generate a confusion matrix, which is a table used to evaluate the performance of a classification model. 
+
+#install.packages('caret')
+library(caret)
+confusionMatrix(data = factor(as.numeric(pred_test>0.5)), 
+                reference = factor(test$Disease_class_num),
+                positive = "1")
+
+```
+
+## Time series plot
+
+Time series plot is a type of plot used to display changes in a time-based variable over time. It is commonly used in statistical analysis to explore patterns and trends in time series data. 
+
+The plot displays the personal savings rate over the period from 1967 to 2015. The x-axis represents the date, and the y-axis represents the personal savings rate. The **geom_line()** function is used to create a line chart, and the geom_smooth() function is used to add a smoothed line on top of the line chart.
+
+```{r , fig.align = 'center', fig.width = 7, fig.height = 5, message = FALSE, warning = FALSE}
+ggplot(economics, aes(x = date, y = psavert)) +
+  geom_line(color = "indianred3", 
+            size=1 ) +
+  geom_smooth() +
+  scale_x_date(date_breaks = '5 years', 
+               labels = date_format("%b-%y")) +
+  labs(title = "Personal Savings Rate",
+       subtitle = "1967 to 2015",
+       x = "",
+       y = "Personal Savings Rate") +
+  theme_minimal()
+```
+
